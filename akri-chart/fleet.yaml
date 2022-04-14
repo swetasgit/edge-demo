@@ -1,0 +1,9 @@
+defaultNamespace: akri
+
+helm:
+  chart: akri
+  repo: https://project-akri.github.io/akri/
+  releaseName: akri-demo
+  values:
+    agent:
+      full: true
