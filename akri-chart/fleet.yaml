@@ -10,3 +10,12 @@ helm:
       full: true
     rbac:
       enabled: true
+    onvif:
+      discovery:
+        enabled: true
+      configuration:
+        enabled: true
+        brokerPod: 
+          image: 
+            repository: ghcr.io/project-akri/akri/onvif-video-broker
+            tag: latest
