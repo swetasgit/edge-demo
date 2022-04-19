@@ -1,7 +1,7 @@
 defaultNamespace: akri
 
 helm:
-  chart: akri-dev
+  chart: akri
   repo: https://project-akri.github.io/akri/
   releaseName: akri-demo
   values:
