@@ -17,7 +17,7 @@ helm:
         enabled: true
         discoveryDetails:
           udevRules:
-          - KERNELS=="video0"
+          - KERNELS=="video{0-9}"
         brokerPod: 
           image: 
             repository: ghcr.io/project-akri/akri/udev-video-broker
