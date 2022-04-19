@@ -10,12 +10,15 @@ helm:
       full: true
     rbac:
       enabled: true
-    onvif:
+    udev:
       discovery:
         enabled: true
       configuration:
         enabled: true
+        discoveryDetails:
+          udevRules:
+          - KERNELS=="video0"
         brokerPod: 
           image: 
-            repository: ghcr.io/project-akri/akri/onvif-video-broker
+            repository: ghcr.io/project-akri/akri/udev-video-broker
             tag: latest
