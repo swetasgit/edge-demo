@@ -5,5 +5,8 @@ helm:
   repo: https://project-akri.github.io/akri/
   releaseName: akri-demo
   values:
+    kubernetesDistro: k3s
     agent:
       full: true
+    rbac:
+      enabled: true
