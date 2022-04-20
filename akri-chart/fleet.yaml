@@ -18,7 +18,7 @@ helm:
         name: akri-demo
         discoveryDetails:
           udevRules:
-          - KERNELS=="video0", ENV{ID_V4L_CAPABILITIES}=="*:capture:*"
+          - KERNELS=="video0"
         brokerPod: 
           image: 
             repository: ghcr.io/project-akri/akri/udev-video-broker
