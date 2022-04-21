@@ -18,8 +18,9 @@ helm:
         name: akri-demo
         discoveryDetails:
           udevRules:
+          # TODO, find right filter to not pick up second camera source ()
           - KERNELS=="video0"
         brokerPod: 
           image: 
-            repository: ghcr.io/project-akri/akri/udev-video-broker
+            repository: docker.io/atgracey/v4l2
             tag: latest
