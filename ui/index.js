@@ -1,4 +1,6 @@
+const multiparty = require('multiparty')
 const express = require('express')
+
 const app = express()
 
 const port = process.env.PORT || 8080
@@ -59,7 +61,7 @@ app.post('/addImage', (req, res) => {
 
 
 app.get('/images',(req, res)=>{
-    res.send(
+    res.json(
         getImages().map(
             (b)=>(
                 b.toString('base64'))))
