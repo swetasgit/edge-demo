@@ -22,5 +22,5 @@ helm:
           - KERNELS=="video0"
         brokerPod: 
           image: 
-            repository: docker.io/atgracey/v4l2
+            repository: docker.io/atgracey/yolov-headless
             tag: latest
