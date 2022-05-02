@@ -192,10 +192,8 @@ def detect(opt):
             # Print time (inference + NMS)
             print(f'{s}Done. ({t2 - t1:.3f}s)')
 
-
             # Save results (image with detections)
             if save_img:
-                print("HI")
                 if dataset.mode == 'image':
                     cv2.imwrite(save_path, im0)
                 else:  # 'video' or 'stream'
