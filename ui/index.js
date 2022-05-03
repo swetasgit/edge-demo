@@ -1,5 +1,6 @@
 const multiparty = require('multiparty')
 const express = require('express')
+var bodyParser = require('body-parser')
 
 const app = express()
 
@@ -20,8 +21,6 @@ const addImage = (image) => {
 const getImages = () => {
     return buffer
 }
-
-
 
 app.post('/addImage', (req, res) => {
 
@@ -51,7 +50,7 @@ app.post('/addImage', (req, res) => {
 
 
         part.on('end', ()=>{
-            addImage(Buffer.concat(bufferArr))
+            addImage(Buffer.concat(bufferArr).toString('base64'))
         })
     })
 
@@ -59,12 +58,17 @@ app.post('/addImage', (req, res) => {
     form.parse(req)
 })
 
+app.use(bodyParser.json())
+app.post('/addImageBase64', (req, res) => {
+    console.log('addImageBase64')
+
+    addImage(req.body.image)
+    res.send(204)
+})
+
 
 app.get('/images',(req, res)=>{
-    res.json(
-        getImages().map(
-            (b)=>(
-                b.toString('base64'))))
+    res.json(getImages())
 })
 
 app.listen(port, () => {

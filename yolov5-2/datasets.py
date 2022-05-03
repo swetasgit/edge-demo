@@ -206,6 +206,7 @@ class LoadImages:  # for inference
 
 class LoadWebcam:  # for inference
     def __init__(self, pipe='0', img_size=640, stride=32):
+        print("LoadWebcam __init__")
         self.img_size = img_size
         self.stride = stride
 
@@ -225,10 +226,6 @@ class LoadWebcam:  # for inference
 
     def __next__(self):
         self.count += 1
-        if cv2.waitKey(1) == ord('q'):  # q to quit
-            self.cap.release()
-            cv2.destroyAllWindows()
-            raise StopIteration
 
         # Read frame
         if self.pipe == 0:  # local camera
@@ -264,6 +261,7 @@ class LoadWebcam:  # for inference
 
 class LoadStreams:  # multiple IP or RTSP cameras
     def __init__(self, sources='streams.txt', img_size=640, stride=32, auto=True):
+        print("LoadStreams __init__")
         self.mode = 'stream'
         self.img_size = img_size
         self.stride = stride
@@ -281,16 +279,12 @@ class LoadStreams:  # multiple IP or RTSP cameras
         for i, s in enumerate(sources):  # index, source
             # Start thread to read frames from video stream
             print(f'{i + 1}/{n}: {s}... ', end='')
-            if 'youtube.com/' in s or 'youtu.be/' in s:  # if source is YouTube video
-                check_requirements(('pafy', 'youtube_dl'))
-                import pafy
-                s = pafy.new(s).getbest(preftype="mp4").url  # YouTube URL
             s = eval(s) if s.isnumeric() else s  # i.e. s = '0' local webcam
             cap = cv2.VideoCapture(s)
             assert cap.isOpened(), f'Failed to open {s}'
             w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            self.fps[i] = max(cap.get(cv2.CAP_PROP_FPS) % 100, 0) or 30.0  # 30 FPS fallback
+            self.fps[i] = 2.0  # 30 FPS fallback
             self.frames[i] = max(int(cap.get(cv2.CAP_PROP_FRAME_COUNT)), 0) or float('inf')  # infinite stream fallback
 
             _, self.imgs[i] = cap.read()  # guarantee first frame

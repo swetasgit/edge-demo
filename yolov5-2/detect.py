@@ -1,6 +1,10 @@
 import argparse
 import time
 from pathlib import Path
+import http.client
+import base64
+import json
+
 
 import cv2
 import torch
@@ -15,6 +19,19 @@ from utils.general import check_img_size, check_requirements, check_imshow, non_
     scale_coords, xyxy2xywh, strip_optimizer, set_logging, increment_path, save_one_box
 from utils.plots import colors, plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized
+
+
+debounce_counter = 0
+debounce_latch = False
+
+def sendImage(labels, img):
+    image = cv2.imencode('.jpg', img)[1]
+    base64_image = str(base64.b64encode(image))[2:-1]
+    json_data = json.dumps({'image': base64_image})
+
+    conn = http.client.HTTPConnection("ui.edge-demo", 8080)
+    headers = {'Content-type': 'application/json'}
+    conn.request('POST', '/addImageBase64', json_data, headers)
 
 
 @torch.no_grad()
@@ -97,16 +114,20 @@ def detect(opt):
     vid_path, vid_writer = None, None
     print("here 1")
     if webcam:
+        print("Is Webcam")
         view_img = False
         cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=backend == 'pytorch')
     else:
+        print("Is Not Webcam")
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=backend == 'pytorch')
 
     # Run inference
     if device.type != 'cpu' and backend == 'pytorch':
         model(torch.zeros(1, 3, *imgsz).to(device).type_as(next(model.parameters())))  # run once
     t0 = time.time()
+
+
     for path, img, im0s, vid_cap in dataset:
         img = torch.from_numpy(img).to(device)
         img = img.half() if half and backend == 'pytorch' else img.float()  # uint8 to fp16/32
@@ -165,6 +186,8 @@ def detect(opt):
             s += '%gx%g ' % img.shape[2:]  # print string
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0.copy() if opt.save_crop else im0  # for opt.save_crop
+
+
             if len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
@@ -173,7 +196,11 @@ def detect(opt):
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
-
+                
+                if not debounce_latch: # only care about first in sequence
+                    debounce_latch = True
+                    sendImage(s, im0)
+                
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
                     if save_txt:  # Write to file
@@ -187,11 +214,12 @@ def detect(opt):
                         label = None if opt.hide_labels else (names[c] if opt.hide_conf else f'{names[c]} {conf:.2f}')
                         plot_one_box(xyxy, im0, label=label, color=colors(c, True), line_thickness=opt.line_thickness)
                         if opt.save_crop:
+                            
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
-
-            # Print time (inference + NMS)
-            print(f'{s}Done. ({t2 - t1:.3f}s)')
-
+                print(f'{s}Done. ({t2 - t1:.3f}s @ {time.time()})')
+            else:
+              debounce_latch = False
+              
             # Save results (image with detections)
             if save_img:
                 if dataset.mode == 'image':
@@ -210,7 +238,7 @@ def detect(opt):
                             save_path += '.mp4'
                         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                     vid_writer.write(im0)
-
+    
     if save_txt or save_img:
         s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
         print(f"Results saved to {save_dir}{s}")

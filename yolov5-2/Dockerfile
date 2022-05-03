@@ -8,4 +8,4 @@ COPY datasets.py /yolov5/utils/datasets.py
 
 WORKDIR /yolov5/
 
-CMD ["/bin/bash", "-c", "ls; pwd; python3 /yolov5/detect.py --weights /yolov5/suse-chameleon.pt --source 0"]
+CMD ["/bin/bash", "-c", "python3 /yolov5/detect.py --weights /yolov5/suse-chameleon.pt --source 0 --save-crop"]
