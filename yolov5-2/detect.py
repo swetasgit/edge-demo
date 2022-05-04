@@ -28,8 +28,8 @@ debounce_latch = False
 
 location_name = os.getenv('LOCATION_NAME', 'Location Not Set')
 
-def sendImage(labels, img):
-    image = cv2.imencode('.jpg', img)[1]
+def sendImage(labels, imgBoxed, imgCopy):
+    image = cv2.imencode('.jpg', imgBoxed)[1]
     base64_image = str(base64.b64encode(image))[2:-1]
     json_data = json.dumps({'image': base64_image, 'location': location_name, 'labels':labels})
 
@@ -54,7 +54,6 @@ def detect(opt):
     device = select_device(opt.device)
     half = device.type != 'cpu'  # half precision only supported on CUDA
 
-    print("here 0")
     # Load model
     weights = weights[0] if isinstance(weights, list) else weights
     suffix = Path(weights).suffix
@@ -201,9 +200,6 @@ def detect(opt):
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
                 
-                if not debounce_latch: # only care about first in sequence
-                    debounce_latch = True
-                    sendImage(s, im0)
                 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
@@ -218,36 +214,40 @@ def detect(opt):
                         label = None if opt.hide_labels else (names[c] if opt.hide_conf else f'{names[c]} {conf:.2f}')
                         plot_one_box(xyxy, im0, label=label, color=colors(c, True), line_thickness=opt.line_thickness)
                         if opt.save_crop:
-                            
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
+                            
+                if not debounce_latch: # only care about first in sequence
+                    debounce_latch = True
+                    sendImage(s, im0, imc)
+                    
                 print(f'{s}Done. ({t2 - t1:.3f}s @ {time.time()})')
             else:
               debounce_latch = False
               
             # Save results (image with detections)
-            if save_img:
-                if dataset.mode == 'image':
-                    cv2.imwrite(save_path, im0)
-                else:  # 'video' or 'stream'
-                    if vid_path != save_path:  # new video
-                        vid_path = save_path
-                        if isinstance(vid_writer, cv2.VideoWriter):
-                            vid_writer.release()  # release previous video writer
-                        if vid_cap:  # video
-                            fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                            w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                            h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                        else:  # stream
-                            fps, w, h = 30, im0.shape[1], im0.shape[0]
-                            save_path += '.mp4'
-                        vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
-                    vid_writer.write(im0)
+            # if save_img:
+            #     if dataset.mode == 'image':
+            #         cv2.imwrite(save_path, im0)
+            #     else:  # 'video' or 'stream'
+            #         if vid_path != save_path:  # new video
+            #             vid_path = save_path
+            #             if isinstance(vid_writer, cv2.VideoWriter):
+            #                 vid_writer.release()  # release previous video writer
+            #             if vid_cap:  # video
+            #                 fps = vid_cap.get(cv2.CAP_PROP_FPS)
+            #                 w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            #                 h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            #             else:  # stream
+            #                 fps, w, h = 30, im0.shape[1], im0.shape[0]
+            #                 save_path += '.mp4'
+            #             vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
+            #         vid_writer.write(im0)
     
     if save_txt or save_img:
         s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
         print(f"Results saved to {save_dir}{s}")
 
-    print(f'Done. ({time.time() - t0:.3f}s)')
+    # print(f'Done. ({time.time() - t0:.3f}s)')
 
 
 if __name__ == '__main__':

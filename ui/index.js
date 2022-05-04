@@ -36,10 +36,10 @@ app.post('/addImageBase64', (req, res) => {
 
     // TODO Lookup from DB
 
-    
 
     io.emit('new_frame', req.body)
-    res.send(204)
+    
+    res.sendStatus(204)
 })
 
 
