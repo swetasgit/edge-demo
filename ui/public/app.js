@@ -1,6 +1,6 @@
-const toImg = (b64) => {
+const toImg = ({image}) => {
   const img = document.createElement('img')
-  img.setAttribute('src',`data:image/jpeg;base64,${b64}`)
+  img.setAttribute('src',`data:image/jpeg;base64,${image}`)
   img.style.height = '240px'
   img.style.width = '320px'
   return img
@@ -18,3 +18,9 @@ setInterval(()=>{
       console.log(err)
   })
 },10*1000)
+
+
+var socket = io();
+socket.on('', function(msg) {
+  // TODO
+});

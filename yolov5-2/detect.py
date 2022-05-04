@@ -4,6 +4,7 @@ from pathlib import Path
 import http.client
 import base64
 import json
+import os
 
 
 import cv2
@@ -24,10 +25,13 @@ from utils.torch_utils import select_device, load_classifier, time_synchronized
 debounce_counter = 0
 debounce_latch = False
 
+
+location_name = os.getenv('LOCATION_NAME', 'Location Not Set')
+
 def sendImage(labels, img):
     image = cv2.imencode('.jpg', img)[1]
     base64_image = str(base64.b64encode(image))[2:-1]
-    json_data = json.dumps({'image': base64_image})
+    json_data = json.dumps({'image': base64_image, 'location': location_name, 'labels':labels})
 
     conn = http.client.HTTPConnection("ui.edge-demo", 8080)
     headers = {'Content-type': 'application/json'}
