@@ -1,0 +1,32 @@
+defaultNamespace: akri
+
+helm:
+  chart: akri-dev
+  repo: https://project-akri.github.io/akri/
+  releaseName: akri-demo
+  values:
+    agent:
+      host:
+        containerRuntimeSocket: /var/run/docker.sock
+      full: true
+    rbac:
+      enabled: true
+    udev:
+      discovery:
+        enabled: true
+      configuration:
+        enabled: true
+        name: akri-demo
+        discoveryDetails:
+          udevRules:
+          # TODO, find right filter to not pick up second camera source ()
+          - KERNELS=="video0"
+        brokerPod: 
+          image: 
+            repository: docker.io/atgracey/yolov-headless
+            tag: latest
+          resources:
+            memoryRequest: 1000Mi
+            cpuRequest: 1000m
+            memoryLimit: 3000Mi
+            cpuLimit: 2900m
