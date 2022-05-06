@@ -1,7 +1,9 @@
 Demo of Elemental, Akri, Fleet, and AI/ML 
 
 Contents:
-- [ ] Fleet bundle to install Akri with correct values
-- [ ] ML model for chameleon detection
-- [ ] Custom code for consuming frame buffer stream
-- [ ] Demo steps
+- [x] Fleet bundle to install Akri with correct values
+- [x] ML model for chameleon detection
+- [x] Custom code for consuming frame buffer stream
+- [ ] Test for race condition on bootstrap
+- [ ] Make more self-contained
+- [ ] Document demo steps
