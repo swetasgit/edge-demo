@@ -24,3 +24,8 @@ helm:
           image: 
             repository: docker.io/atgracey/yolov-headless
             tag: latest
+          resources:
+            memoryRequest: 1000Mi
+            cpuRequest: 1000m
+            memoryLimit: 3000Mi
+            cpuLimit: 2900m
