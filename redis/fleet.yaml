@@ -1,0 +1,12 @@
+defaultNamespace: redis
+
+helm:
+  chart: redis
+  repo: https://charts.bitnami.com/bitnami
+  releaseName: edge-demo-redis
+  values:
+    architecture: standalone
+    auth:
+      password: Password
+    replica:
+      replicaCount: 0
