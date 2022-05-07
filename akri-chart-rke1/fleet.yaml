@@ -7,7 +7,7 @@ helm:
   values:
     agent:
       host:
-        containerRuntimeSocket: /var/run/docker.sock
+        containerRuntimeSocket: /var/run/dockershim.sock
       full: true
     rbac:
       enabled: true
