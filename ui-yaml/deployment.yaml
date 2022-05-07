@@ -35,20 +35,3 @@ spec:
   selector:
     workload.user.cattle.io/workloadselector: apps.deployment-edge-demo-ui
   type: ClusterIP
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: edge-ui
-spec:
-  rules:
-  - host: edge-ui.demos.gracey.dev
-    http:
-      paths:
-      - backend:
-          service:
-            name: ui
-            port:
-              number: 8080
-        path: /
-        pathType: Prefix
