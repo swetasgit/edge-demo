@@ -26,7 +26,7 @@ debounce_counter = 0
 debounce_latch = False
 
 
-location_name = os.getenv('LOCATION_NAME', 'Location Not Set')
+location_name = os.getenv('LOCATION_NAME', 'Store 2343')
 
 def sendImage(labels, imgBoxed, imgCopy):
     image = cv2.imencode('.jpg', imgBoxed)[1]
@@ -40,10 +40,8 @@ def sendImage(labels, imgBoxed, imgCopy):
 
 @torch.no_grad()
 def detect(opt):
-    source, weights, view_img, save_txt, imgsz = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
+    source, weights, save_txt, imgsz = opt.source, opt.weights, opt.save_txt, opt.img_size
     save_img = not opt.nosave and not source.endswith('.txt')  # save inference images
-    webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
-        ('rtsp://', 'rtmp://', 'http://', 'https://'))
 
     # Directories
     save_dir = increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok)  # increment run
@@ -57,6 +55,7 @@ def detect(opt):
     # Load model
     weights = weights[0] if isinstance(weights, list) else weights
     suffix = Path(weights).suffix
+
     if suffix == '.pt':
         backend = 'pytorch'
         model = attempt_load(weights, map_location=device)  # load FP32 model
@@ -65,47 +64,6 @@ def detect(opt):
         names = model.module.names if hasattr(model, 'module') else model.names  # class names
         if half:
             model.half()  # to FP16
-    else:
-        import tensorflow as tf
-        from tensorflow import keras
-
-        stride = None
-        with open('data/coco.yaml') as f:
-            names = yaml.load(f, Loader=yaml.FullLoader)['names']  # class names (assume COCO)
-
-        if suffix == '.pb':
-            backend = 'graph_def'
-
-            # https://www.tensorflow.org/guide/migrate#a_graphpb_or_graphpbtxt
-            # https://github.com/leimao/Frozen_Graph_TensorFlow
-            def wrap_frozen_graph(graph_def, inputs, outputs):
-                def _imports_graph_def():
-                    tf.compat.v1.import_graph_def(graph_def, name="")
-
-                wrapped_import = tf.compat.v1.wrap_function(_imports_graph_def, [])
-                import_graph = wrapped_import.graph
-                return wrapped_import.prune(
-                    tf.nest.map_structure(import_graph.as_graph_element, inputs),
-                    tf.nest.map_structure(import_graph.as_graph_element, outputs))
-
-            graph = tf.Graph()
-            graph_def = graph.as_graph_def()
-            graph_def.ParseFromString(open(weights, 'rb').read())
-            frozen_func = wrap_frozen_graph(graph_def=graph_def, inputs="x:0", outputs="Identity:0")
-
-        elif suffix == '.tflite':
-            backend = 'tflite'
-            # Load TFLite model and allocate tensors
-            interpreter = tf.lite.Interpreter(model_path=weights)
-            interpreter.allocate_tensors()
-
-            # Get input and output tensors
-            input_details = interpreter.get_input_details()
-            output_details = interpreter.get_output_details()
-
-        else:
-            backend = 'saved_model'
-            model = keras.models.load_model(weights)
 
     # Second-stage classifier
     classify = False
@@ -115,15 +73,8 @@ def detect(opt):
 
     # Set Dataloader
     vid_path, vid_writer = None, None
-    print("here 1")
-    if webcam:
-        print("Is Webcam")
-        view_img = False
-        cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=backend == 'pytorch')
-    else:
-        print("Is Not Webcam")
-        dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=backend == 'pytorch')
+    cudnn.benchmark = True  # set True to speed up constant image size inference
+    dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=backend == 'pytorch')
 
     # Run inference
     if device.type != 'cpu' and backend == 'pytorch':
@@ -140,32 +91,7 @@ def detect(opt):
 
         # Inference
         t1 = time_synchronized()
-        if backend == 'pytorch':
-            pred = model(img, augment=opt.augment)[0]
-        else:
-            if backend == 'saved_model':
-                pred = model(img.permute(0, 2, 3, 1).cpu().numpy(), training=False).numpy()
-            elif backend == 'graph_def':
-                pred = frozen_func(x=tf.constant(img.permute(0, 2, 3, 1).cpu().numpy())).numpy()
-            elif backend == 'tflite':
-                input_data = img.permute(0, 2, 3, 1).cpu().numpy()
-                if opt.tfl_int8:
-                    scale, zero_point = input_details[0]['quantization']
-                    input_data = input_data / scale + zero_point
-                    input_data = input_data.astype(np.uint8)
-                interpreter.set_tensor(input_details[0]['index'], input_data)
-                interpreter.invoke()
-                pred = interpreter.get_tensor(output_details[0]['index'])
-                if opt.tfl_int8:
-                    scale, zero_point = output_details[0]['quantization']
-                    pred = pred.astype(np.float32)
-                    pred = (pred - zero_point) * scale
-            # Denormalize xywh
-            pred[..., 0] *= imgsz[1]  # x
-            pred[..., 1] *= imgsz[0]  # y
-            pred[..., 2] *= imgsz[1]  # w
-            pred[..., 3] *= imgsz[0]  # h
-            pred = torch.tensor(pred)
+        pred = model(img, augment=opt.augment)[0]
 
         # Apply NMS
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, opt.classes, opt.agnostic_nms,
@@ -178,15 +104,10 @@ def detect(opt):
 
         # Process detections
         for i, det in enumerate(pred):  # detections per image
-            if webcam:  # batch_size >= 1
-                p, s, im0, frame = path[i], f'{i}: ', im0s[i].copy(), dataset.count
-            else:
-                p, s, im0, frame = path, '', im0s.copy(), getattr(dataset, 'frame', 0)
+            p, s, im0, frame = path[i], '', im0s[i].copy(), dataset.count
 
             p = Path(p)  # to Path
-            save_path = str(save_dir / p.name)  # img.jpg
-            txt_path = str(save_dir / 'labels' / p.stem) + ('' if dataset.mode == 'image' else f'_{frame}')  # img.txt
-            s += '%gx%g ' % img.shape[2:]  # print string
+            s += ''  # print string
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0.copy() if opt.save_crop else im0  # for opt.save_crop
 
@@ -198,23 +119,13 @@ def detect(opt):
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
-                    s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+                    s += f"{names[int(c)]},"  # add to string
                 
-                
-                # Write results
+                # Plot box
                 for *xyxy, conf, cls in reversed(det):
-                    if save_txt:  # Write to file
-                        xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                        line = (cls, *xywh, conf) if opt.save_conf else (cls, *xywh)  # label format
-                        with open(txt_path + '.txt', 'a') as f:
-                            f.write(('%g ' * len(line)).rstrip() % line + '\n')
-
-                    if save_img or opt.save_crop or view_img:  # Add bbox to image
-                        c = int(cls)  # integer class
-                        label = None if opt.hide_labels else (names[c] if opt.hide_conf else f'{names[c]} {conf:.2f}')
-                        plot_one_box(xyxy, im0, label=label, color=colors(c, True), line_thickness=opt.line_thickness)
-                        if opt.save_crop:
-                            save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
+                    c = int(cls)  # integer class
+                    label = None if opt.hide_labels else (names[c] if opt.hide_conf else f'{names[c]} {conf:.2f}')
+                    plot_one_box(xyxy, im0, label=label, color=colors(c, True), line_thickness=opt.line_thickness)
                             
                 if not debounce_latch: # only care about first in sequence
                     debounce_latch = True
@@ -223,37 +134,12 @@ def detect(opt):
                 print(f'{s}Done. ({t2 - t1:.3f}s @ {time.time()})')
             else:
               debounce_latch = False
-              
-            # Save results (image with detections)
-            # if save_img:
-            #     if dataset.mode == 'image':
-            #         cv2.imwrite(save_path, im0)
-            #     else:  # 'video' or 'stream'
-            #         if vid_path != save_path:  # new video
-            #             vid_path = save_path
-            #             if isinstance(vid_writer, cv2.VideoWriter):
-            #                 vid_writer.release()  # release previous video writer
-            #             if vid_cap:  # video
-            #                 fps = vid_cap.get(cv2.CAP_PROP_FPS)
-            #                 w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            #                 h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            #             else:  # stream
-            #                 fps, w, h = 30, im0.shape[1], im0.shape[0]
-            #                 save_path += '.mp4'
-            #             vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
-            #         vid_writer.write(im0)
     
-    if save_txt or save_img:
-        s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
-        print(f"Results saved to {save_dir}{s}")
-
-    # print(f'Done. ({time.time() - t0:.3f}s)')
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
-    parser.add_argument('--source', type=str, default='data/images', help='source')  # file/folder, 0 for webcam
+    parser.add_argument('--source', type=str, default='data/images', help='source')  # device path
     parser.add_argument('--img-size', nargs='+', type=int, default=[320, 320], help='image size')  # height, width
     parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')

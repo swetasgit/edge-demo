@@ -265,11 +265,8 @@ class LoadStreams:  # multiple IP or RTSP cameras
         self.img_size = img_size
         self.stride = stride
 
-        if os.path.isfile(sources):
-            with open(sources, 'r') as f:
-                sources = [x.strip() for x in f.read().strip().splitlines() if len(x.strip())]
-        else:
-            sources = [sources]
+
+        sources = [sources]
 
         n = len(sources)
         self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
@@ -279,14 +276,21 @@ class LoadStreams:  # multiple IP or RTSP cameras
             # Start thread to read frames from video stream
             print(f'{i + 1}/{n}: {s}... ', end='')
             s = eval(s) if s.isnumeric() else s  # i.e. s = '0' local webcam
-            cap = cv2.VideoCapture(s)
+            cap = cv2.VideoCapture(s, cv2.CAP_V4L)
             assert cap.isOpened(), f'Failed to open {s}'
             w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             self.fps[i] = 2.0  # 30 FPS fallback
             self.frames[i] = max(int(cap.get(cv2.CAP_PROP_FRAME_COUNT)), 0) or float('inf')  # infinite stream fallback
 
-            _, self.imgs[i] = cap.read()  # guarantee first frame
+            ret_val, self.imgs[i] = cap.read()  # guarantee first frame # this is returning [false, None]
+            if not ret_val:
+                print('cap.read() -- ret_val is false')
+                print('length is:')
+                print(self.imgs.length, flush=True)
+                time.sleep(5)
+                _, self.imgs[i] = cap.read()
+            
             self.threads[i] = Thread(target=self.update, args=([i, cap]), daemon=True)
             print(f" success ({self.frames[i]} frames {w}x{h} at {self.fps[i]:.2f} FPS)")
             self.threads[i].start()
