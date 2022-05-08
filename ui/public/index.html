@@ -24,13 +24,23 @@
       <i class="fa-solid fa-caret-down"></i>
     </div>
   </header>
-  
-  <div id="content" class="content"></div>
+  <div class="centerall">
+    <div id="content" class="content panel"></div>
 
+    <div class="panel whatis">
+      <header class="panelheader">What is this?</header>
+      TBD
+    </div>
 
-  <footer class="page-footer">
+    <div class="panel tryit">
+      <header class="panelheader">Try it yourself</header>
+      <img src="qrcode.png" class="qrcode"/>
+    </div>
+  </div>
+
+  <!-- <footer class="page-footer">
     <span class="pull-right">&copy; 2022 SUSE <img src="logo-dark.png" class="logo"/></span>
-  </footer>
+  </footer> -->
 
 
 
@@ -40,6 +50,7 @@
 
   <script id="image-template" type="text/x-handlebars-template">
     <div class="container">
+      <header class="panelheader">Awarded Promotions</header>
       <div class="imagetext">
         <!-- TODO: Make list?-->
         <span class="label">Promotion(s)</span>
