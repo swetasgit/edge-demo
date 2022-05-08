@@ -1,0 +1,71 @@
+.pull-right {
+  float: right;
+}
+
+.page-header {
+  height: 48px;
+  width: 100%;
+  background-color: #0c322c;
+}
+
+.page-footer {
+  position: absolute;
+  bottom: 0;
+  height: 24px;
+  width: 100%;
+}
+
+.account, .bell {
+  width: 48px;
+  height: 100%;
+  text-align: -webkit-center;
+}
+
+.account * {
+  padding-top: 16px;
+  margin: auto;
+}
+
+.logo {
+  height: 100%;
+}
+
+.content {
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 48px;
+  width: 640px;
+  min-height: 480px;
+  background-color: #90EBCD;
+  border-radius: 32px;
+  padding: 16px;
+}
+
+.container {
+  width: 100%;
+  height: 100%;
+}
+
+.imagetext, .imagetext span {
+  clear: both;
+  float: left;
+}
+
+.demoimage {
+  height: 360px;
+  width: 540px;
+  margin-left: 48px;
+  margin-top: 24px;
+}
+
+.label {
+  padding-left: 16px;
+  font-weight: bold;
+}
+.label::after {
+  content: ':';
+  font-weight: bold;
+}
+.promotion, .location, .labels {
+  padding-left: 24px;
+}

@@ -5,17 +5,57 @@
   <title>SUSE Edge Demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="normalize.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/all.css">
+  <link rel="stylesheet" href="css/style.css">
   <script src="/socket.io/socket.io.js"></script>
+
 
 </head>
 
 <body>
+  <header class="page-header">
+    <img src="logo.png" class="logo"/>
+    <div class="bell pull-right">
+      <i class="fa-regular fa-bell"></i>
+    </div>
+    <div class="account pull-right">
+      <i class="fa-solid fa-user-gear"></i>
+      <i class="fa-solid fa-caret-down"></i>
+    </div>
+  </header>
+  
+  <div id="content" class="content"></div>
 
-  <!-- Add your site or application content here -->
-  <p>Hello world! This is the SUSE Edge Demo</p>
-  <div id="images"></div>
+
+  <footer class="page-footer">
+    <span class="pull-right">&copy; 2022 SUSE <img src="logo-dark.png" class="logo"/></span>
+  </footer>
+
+
+
+
+
+
+
+  <script id="image-template" type="text/x-handlebars-template">
+    <div class="container">
+      <div class="imagetext">
+        <!-- TODO: Make list?-->
+        <span class="label">Promotion(s)</span>
+        <span class="promotion">{{promotion}}</span>
+
+        <span class="label">At Location</span>
+        <span class="location">{{location}}</span> 
+
+        <span class="label">Why</span>
+        <span class="labels">{{labels}}</span>
+      </div>
+      <img src="data:image/jpeg;base64,{{image}}" class="demoimage"/>
+    </div>
+  </script>
+
+  <script src="handlebars.min.js"></script>
   <script src="app.js"></script>
 </body>
 

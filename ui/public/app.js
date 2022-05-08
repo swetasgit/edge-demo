@@ -1,39 +1,17 @@
-const toImg = (image) => {
-  const img = document.createElement('img')
-  img.setAttribute('src',`data:image/jpeg;base64,${image}`)
-  img.style.height = '240px'
-  img.style.width = '320px'
-  return img
-}
+const template = Handlebars.compile(document.getElementById('image-template').innerHTML)
 
 var socket = io();
 socket.on('new_frame', function({image, location, labels, promotion}) {
-  // TODO also show location and labels
-  console.log(location, labels, promotion)
 
+  const html = template({image, location, labels, promotion})
 
-  // TODO switch to handlebars?
-  const imgNode = toImg(image)
-  const locationSpan = document.createElement('span')
-  locationSpan.innerText = location
-  const labelSpan = document.createElement('span')
-  labelSpan.innerText = labels
-  const promotionSpan = document.createElement('span')
-  promotionSpan.innerText = promotion
-
-  const containerDiv = document.createElement('span')
-  containerDiv.appendChild(locationSpan)
-  containerDiv.appendChild(labelSpan)
-  containerDiv.appendChild(promotionSpan)
-  containerDiv.appendChild(imgNode)
-
-
-  const parent = document.getElementById('images')
-
-  // Clear only if we want a single image
-  if(true) { 
-    parent.innerHTML = ''
-  }
-  parent.appendChild(containerDiv)
-
+  document.getElementById('content').innerHTML = html
 })
+
+// One time blank init
+const html = template({
+  image:'/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAyAEYDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9DaKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD/9k=',
+  location:'Waiting', 
+  labels:'Waiting', 
+  promotion:'Waiting'})
+document.getElementById('content').innerHTML = html
