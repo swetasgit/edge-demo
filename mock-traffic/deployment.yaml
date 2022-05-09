@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    workload.user.cattle.io/workloadselector: apps.deployment-edge-ai-model
+  name: edge-ai-model
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: apps.deployment-edge-ai-model
+  template:
+    metadata:
+      labels:
+        workload.user.cattle.io/workloadselector: apps.deployment-edge-ai-model
+    spec:
+      containers:
+      - image: registry.suse.com/bci/python:latest
+        name: ai-model
+        command: ["/bin/bash"]
+        args:
+        - -c
+        - |-
+          while true
+          do
+            sleep 5
+            curl https://suse.com
+          done
