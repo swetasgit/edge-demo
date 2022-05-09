@@ -24,6 +24,10 @@ const setup = async ()=>{
     await client.connect()
     client.hSet('active_promotions', 'suse_chameleon', '20% Discount to SLES Subscriptions!')
 
+    
+    // setInterval(()=>{
+    //     client.hGet('active_promotions', 'suse_chameleon') 
+    // },1000)
 }
 setup()
 // // Set up promotions

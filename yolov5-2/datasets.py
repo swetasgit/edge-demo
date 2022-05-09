@@ -287,7 +287,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
             if not ret_val:
                 print('cap.read() -- ret_val is false')
                 print('length is:')
-                print(self.imgs.length, flush=True)
+                print(len(self.imgs), flush=True)
                 time.sleep(5)
                 _, self.imgs[i] = cap.read()
             
