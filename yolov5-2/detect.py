@@ -40,6 +40,7 @@ def sendImage(labels, imgBoxed, imgCopy):
 
 @torch.no_grad()
 def detect(opt):
+    debounce_latch = False
     source, weights, save_txt, imgsz = opt.source, opt.weights, opt.save_txt, opt.img_size
     save_img = not opt.nosave and not source.endswith('.txt')  # save inference images
 
