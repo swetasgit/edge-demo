@@ -111,3 +111,15 @@ body {
   font-family: sans-serif;
   font-size: larger;
 }
+
+ul {
+  list-style: none;
+}
+
+li {
+  text-align: left;
+  line-height: 1.6em;
+  font-family: sans-serif;
+  font-size: large;
+  margin-left: -16px;
+}
