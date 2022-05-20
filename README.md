@@ -1,9 +1,17 @@
-Demo of Elemental, Akri, Fleet, and AI/ML 
+# Edge Keynote Demo for SUSECON 2022
+
+In this repo is all of the content and instructions to duplicate the full demo hosted shown on stage for the SUSECON 2022 Keynote demo. 
+
+Everything that you need to reproduce the full stack is included in this repo.
 
 Contents:
-- [x] Fleet bundle to install Akri with correct values
-- [x] ML model for chameleon detection
-- [x] Custom code for consuming frame buffer stream
-- [ ] Test for race condition on bootstrap
-- [ ] Make more self-contained
-- [ ] Document demo steps
+- Instructions for Setup and configuration of demo
+- Source code and container build for 
+  - ML model 
+  - Demo UI 
+- Preconfigured Fleet bundles for
+  - Akri
+  - Neuvector
+  - Demo UI
+  - Redis
+
