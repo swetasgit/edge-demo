@@ -1,6 +1,0 @@
-defaultNamespace: neuvector
-
-helm:
-  chart: core
-  repo: https://neuvector.github.io/neuvector-helm/
-  releaseName: neuvector-core

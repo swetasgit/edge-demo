@@ -1,0 +1,14 @@
+defaultNamespace: neuvector
+
+helm:
+  chart: core
+  repo: https://neuvector.github.io/neuvector-helm/
+  releaseName: neuvector
+  values:
+    k3s: 
+      enabled: true
+    cve:
+      scanner:
+        replicas: 1
+    controller:
+      replicas: 1
