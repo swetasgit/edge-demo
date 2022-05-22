@@ -2,7 +2,7 @@ FROM registry.suse.com/bci/python
 
 RUN zypper in -y python3-pip python3-pip-wheel gcc11 gcc11-c++ python39-devel Mesa-libGL1 system-group-wheel python3-wheel libgthread-2_0-0; zypper clean --all
 
-RUN pip3.9 install coremltools onnx gsutil notebook
+#RUN pip3.9 install coremltools onnx gsutil notebook
 
 COPY . .
 
