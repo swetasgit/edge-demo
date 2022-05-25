@@ -45,7 +45,7 @@ You can install the operator using helm with:
 ```
 helm -n cattle-rancheros-operator-system install \
   --create-namespace rancheros-operator \
-  https://github.com/rancher-sandbox/os2/releases/download/v0.1.0-alpha21/rancheros-operator-0.1.0-amd64.tgz
+  https://github.com/rancher-sandbox/rancheros-operator/releases/download/v0.1.0/rancheros-operator-0.1.0.tgz
 ```
 
 Once the operator comes up, you need to add a MachineRegistration object with:
@@ -62,7 +62,6 @@ spec:
     rancheros:
       install:
         device: /dev/nvme0n1
-        powerOff: true
     users:
     - name: root
       passwd: root
@@ -86,17 +85,23 @@ This registration url allows us to build a bootstrap iso that knows how to call 
 
 ### Bootstrap ISO
 
-Next, curl the registration url with:
+Next, curl the registration url and build script(s) with:
 
 ```
-curl -s -o reg.yaml <registrationURL>
+REGISTRATION_URL=`kubectl get machineregistration default -ojsonpath="{.status.registrationURL}"`
+curl -s -o reg.yaml $REGISTRATION_URL
 
+curl -sLO https://raw.githubusercontent.com/rancher-sandbox/rancher-node-image/main/Dockerfile
 curl -sLO https://raw.githubusercontent.com/rancher-sandbox/rancher-node-image/main/elemental-iso-build
-bash elemental-iso-build quay.io/costoolkit/os2:v0.1.0-amd64 iso ./reg.yaml
+```
+
+Then run the build with:
+```
+docker build ./Dockerfile -t local/elemental-node-image
+bash elemental-iso-build local/elemental-node-image iso ./reg.yaml
 ```
 
 This will drop an iso file into the working directory. Burn this to a usb-stick.
-
 
 ### Fleet set up
 
@@ -130,7 +135,7 @@ Fill in the form with the following values:
   - `neuvector`
 - Deploy To: `edge-demo`
 
-Click Create.
+Click `Create`.
 
 
 ## Bootstrap Server
@@ -201,6 +206,3 @@ Go ahead and plug in your camera. In a few moments, you should see a new pod get
 
 
 Browse to the ip address of your cluster (can be found with `kubectl get service`) at port 8080 to see the demo app. If you show your camera a chameleon plushie it will show the picture it took along with what it matched in the page.
-
-
-#
