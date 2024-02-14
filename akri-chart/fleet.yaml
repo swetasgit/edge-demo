@@ -21,7 +21,7 @@ helm:
         discoveryDetails:
           udevRules:
           # TODO, find right filter to not pick up second camera source ()
-          - KERNELS=="video[0-1]*", ENV{ID_V4L_CAPABILITIES}==":capture:"
+          - KERNELS=="video1", ENV{ID_V4L_CAPABILITIES}==":capture:"
         brokerPod: 
           image: 
             repository: docker.io/atgracey/yolov-headless
