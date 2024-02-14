@@ -12,8 +12,8 @@ helm:
       enabled: true
     udev:
       discovery:
-        host:
-          udev: /run/udev
+      #  host:
+       #   udev: /run/udev
         enabled: true
       configuration:
         enabled: true
